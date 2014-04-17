@@ -1,0 +1,16 @@
+{
+  "name": "pywebs",
+  "version": "0.0.0",
+  "description": "",
+  "main": "pyprocess.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^1.4.1",
+    "fs-extra": "^0.8.1",
+    "async": "^0.7.0"
+  }
+}
