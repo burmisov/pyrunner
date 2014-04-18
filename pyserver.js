@@ -13,7 +13,10 @@ var app = express();
 var server = http.createServer(app);
 var port = process.env.PORT || 3000;
 
+pydisp.start();
 server.listen(port);
+
+var tasks = {};
 
 app.use(connect.json());
 
@@ -26,15 +29,71 @@ app.get('/status', function (req, res) {
 });
 
 app.post('/tasks', function (req, res) {
-	// Добавить задание и создать websocket-точку
+	var taskInput = req.body;
+	console.log(taskInput);
+	if (req.body && req.body.script && (typeof req.body.script === 'string')) {
+		var task = taskInput;
+		task.id = uuid.v4();
+		task.wss = new WebSocketServer({ server: server, path: '/tasks/' + task.id });
+		wireWssTaskEvents(task);
+		task.createdAt = new Date();
+		task.callback = function (err, output) {
+			if (err) {
+				task.result = 'Error';
+				task.message = err.message;	
+			} else {
+				task.result = 'OK';
+				task.output = output;
+			}
+
+			task.finishedAt = new Date();
+			task.wss.broadcast(JSON.stringify(taskToJson(task)));
+			task.wss.close();
+		};
+
+		pydisp.doTask(task.script, {}, task.callback);
+
+		tasks[task.id] = task;
+
+		res.json(200, {
+			result: 'OK',
+			taskId: task.id
+		});
+	} else {
+		res.json(400, {
+			result: 'Error',
+			message: 'Task script required.'
+		});
+	}
 });
 
 app.get('/tasks', function (req, res) {
-	// Актуальный список заданий
+	res.json(_.map(tasks, taskToJson));
 });
 
 app.get('/tasks/:taskId', function (req, res) {
-	// Информация по конкретному заданию
+	if (tasks.hasOwnProperty(req.params.taskId)) {
+		res.json(200, taskToJson(tasks[req.params.taskId]));
+	} else {
+		res.json(404, {
+			result: 'Errror',
+			message: 'Task <' + req.params.taskId + '> not found.'
+		});
+	}
+});
+
+app.delete('/tasks/:taskId', function (req, res) {
+	if (tasks.hasOwnProperty(req.params.taskId)) {
+		delete tasks[req.params.taskId];
+		res.json(204, {
+			result: 'OK'
+		});
+	} else {
+		res.json(404, {
+			result: 'Errror',
+			message: 'Task <' + req.params.taskId + '> not found.'
+		});
+	}
 });
 
 app.use('*', function (req, res) {
@@ -43,3 +102,18 @@ app.use('*', function (req, res) {
 		message: 'Resource not found.'
 	});
 });
+
+function taskToJson(task) {
+	return _.pick(
+		task, 
+		['id', 'result', 'createdAt', 'finishedAt', 'message', 'output']
+	);
+}
+
+function wireWssTaskEvents(task) {
+	task.wss.broadcast = function (msg) {
+		for (var i = 0; i < this.clients.length; i++) {
+			this.clients[i].send(msg);
+		}
+	};
+}

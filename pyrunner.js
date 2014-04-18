@@ -67,7 +67,7 @@ PyRunner.prototype.runPy = function (script, callback) {
 	if (self.busy) return callback(new Error("Already running a task."));
 	self.busy = true;
 	
-	fs.readdir(self.dirPath, function (err, files) {
+	fsx.readdir(self.dirPath, function (err, files) {
 		if (err) return callback(err);
 
 		async.each(files,
