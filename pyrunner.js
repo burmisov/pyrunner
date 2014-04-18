@@ -76,7 +76,7 @@ PyRunner.prototype.runPy = function (script, callback) {
 					self.waitProcessOutput(function (err, output) {
 						if (err) return callback(err);
 						self.busy = false;
-						return callback(output);
+						return callback(null, output);
 					});
 				});
 			}
