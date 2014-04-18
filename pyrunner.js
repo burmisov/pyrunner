@@ -8,6 +8,10 @@ var async = require('async');
 
 var scriptName = 'script.py';
 
+var TIMEOUTS = {
+	checkOutputCy: 100
+};
+
 var PyRunner = module.exports.PyRunner = function (baseDirPath) {
 	events.EventEmitter.call(this);
 
@@ -21,6 +25,8 @@ var PyRunner = module.exports.PyRunner = function (baseDirPath) {
 util.inherits(PyRunner, events.EventEmitter);
 
 PyRunner.prototype.prepare = function (callback) {
+	if (!callback) throw new Error("Callback required.");
+
 	var self = this;
 
 	self.id = uuid.v4().slice(-6);
@@ -37,6 +43,7 @@ PyRunner.prototype.prepare = function (callback) {
 
 		self.pyproc.run();
 		self.prepared = true;
+		self.lastRun = new Date();
 
 		return callback();
 	});
@@ -76,6 +83,7 @@ PyRunner.prototype.runPy = function (script, callback) {
 					self.waitProcessOutput(function (err, output) {
 						if (err) return callback(err);
 						self.busy = false;
+						self.lastRun = new Date();
 						return callback(null, output);
 					});
 				});
@@ -142,7 +150,7 @@ PyRunner.prototype.waitProcessOutput = function (callback) {
 						}
 					);
 				} else {
-					setTimeout(checkOutput, 1000);
+					setTimeout(checkOutput, TIMEOUTS.checkOutputCy);
 				}
 			}
 		);
