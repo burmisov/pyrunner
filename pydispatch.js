@@ -25,15 +25,9 @@ var PyDispatcher = module.exports.PyDispatcher = function (options) {
 PyDispatcher.prototype.checkAddRunners = function (callback) {
 	var self = this;
 
-	console.log('checkadd:');
-	console.log('current:', self.runners.length);
-	console.log('max:', self.options.maxRunners);
-
 	if (self.runners.length >= self.options.maxRunners) {
-		console.log('cant add');
 		return callback(false);
 	} else {
-		console.log('adding');
 		var runner = new pyrunner.PyRunner(self.options.baseDir);
 		runner.prepare(function (err) {
 			self.runners.push(runner);
@@ -89,7 +83,6 @@ PyDispatcher.prototype.start = function () {
 	self.running = true;
 
 	function checkRunTask () {		
-		//console.log('checkingRunTask:');
 		if (self.tasks.length > 0) {
 			var task = self.tasks.shift();
 			self.waitGetFreeRunner(function (runner) {
