@@ -16,7 +16,7 @@
 				<textarea id="code" class="form-control" rows="10" style="font-family:lucida-console,monospace"></textarea>
 			</div>
 			<a id="runbtn" class="btn btn-primary" rows>Выполнить</a>
-			
+			<div id="techdata" class=well style="margin-top:20px"></div>
 			<div class="form-group" style="margin-top:20px">
 				<label for="results">Результат</label>
 				<div id="results" class="well"></div>
@@ -32,9 +32,63 @@
 					script: code
 				};
 				$.post('/tasks', task, function (response) {
-					alert(response);
+					var taskId = response.taskId;
+					var started = new Date();
+					$('#techdata').html('ID задачи: ' + taskId);
+					getReponse(taskId, function (output) {
+						var ended = new Date();
+						var dur = ended-started;
+						$('#techdata').append(', Время выполнения: ' + dur + 'мс');
+						console.log('>>>', output);
+						var ou = output.output;
+						var ex = output.exception;
+						var re = ex ? ex + '<hr>' + ou : ou;
+						$('#results').html(re);
+					});
 				}, 'json');
 			});
+
+			function getReponse(taskId, callback) {
+				var haveResult = false;
+				var httpFired = false;
+				var output;
+
+				var wsUri = 'ws://' + window.location.host + '/tasks/' + taskId;
+				var wsocket = new WebSocket(wsUri);
+
+				wsocket.onopen = function (evt) {
+					tryHttp();
+				};
+
+				wsocket.onerror = function (evt) {
+					tryHttp();
+				};
+
+				wsocket.onmessage = function (evt) {
+					if (!haveResult) {
+						wsocket.close();
+						haveResult = true;
+						output = JSON.parse(evt.data);
+						return callback(output);
+					}
+				};
+
+				function tryHttp () {
+					if (!httpFired) {
+						var httpFired = true;
+						$.get('/tasks/' + taskId, function (response) {
+							if (!haveResult && response.output) {
+								haveResult = true;
+								wsocket.close();
+								output = response.output;
+								return callback(output);
+							} else {
+								console.log('http miss');
+							}
+						}, 'json');
+					}					
+				}
+			}
 		</script>
 	</body>
 </html>

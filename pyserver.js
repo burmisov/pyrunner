@@ -21,6 +21,7 @@ var tasks = {};
 
 app.use(cors({ origin: true }));
 app.use(connect.json());
+app.use(connect.urlencoded());
 
 app.get('/', function (req, res) {
 	res.sendfile(path.join(__dirname, 'ui.html'));
