@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+	</head>
+	<body>		
+		<div class="container">
+			<br>
+			<div class="jumbotron">							
+				<h2>Выполнение скриптов на Python с помощью веб-сервиса</h2>
+				<p>Эта страница предназначена для проверки работоспособности сервиса</p>
+			</div>
+			<div class="form-group">
+				<label for="code">Скрипт</label>				
+				<textarea id="code" class="form-control" rows="10" style="font-family:lucida-console,monospace"></textarea>
+			</div>
+			<a id="runbtn" class="btn btn-primary" rows>Выполнить</a>
+			
+			<div class="form-group" style="margin-top:20px">
+				<label for="results">Результат</label>
+				<div id="results" class="well"></div>
+			</div>
+  		</div>		
+
+  		<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+
+		<script>
+			$('#runbtn').click(function (evt) {
+				var code = $('#code').val();
+				var task = {
+					script: code
+				};
+				$.post('/tasks', task, function (response) {
+					alert(response);
+				}, 'json');
+			});
+		</script>
+	</body>
+</html>

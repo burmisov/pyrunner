@@ -20,6 +20,10 @@ var tasks = {};
 
 app.use(connect.json());
 
+app.get('/', function (req, res) {
+	res.sendfile(path.join(__dirname, 'ui.html'));
+});
+
 app.get('/status', function (req, res) {
 	res.json(200, {
 		runnersCurrent: pydisp.runners.length,
