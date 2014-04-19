@@ -5,6 +5,7 @@ var path = require('path');
 var uuid = require('uuid');
 var _ = require('underscore');
 var connect = require('connect');
+var cors = require('cors');
 
 var PyDispatcher = require('./pydispatch').PyDispatcher;
 var pydisp = new PyDispatcher();
@@ -18,6 +19,7 @@ server.listen(port);
 
 var tasks = {};
 
+app.use(cors({ origin: true }));
 app.use(connect.json());
 
 app.get('/', function (req, res) {
