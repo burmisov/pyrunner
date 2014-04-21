@@ -39,7 +39,6 @@
 						var ended = new Date();
 						var dur = ended-started;
 						$('#techdata').append(', Время выполнения: ' + dur + 'мс');
-						console.log('>>>', output);
 						var ou = output.output;
 						var ex = output.exception;
 						var re = ex ? ex + '<hr>' + ou : ou;
@@ -68,7 +67,7 @@
 					if (!haveResult) {
 						wsocket.close();
 						haveResult = true;
-						output = JSON.parse(evt.data);
+						output = (JSON.parse(evt.data)).output;
 						return callback(output);
 					}
 				};
@@ -83,7 +82,7 @@
 								output = response.output;
 								return callback(output);
 							} else {
-								console.log('http miss');
+								//console.log('http miss');
 							}
 						}, 'json');
 					}					
