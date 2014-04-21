@@ -27,6 +27,8 @@
 
 		<script>
 			$('#runbtn').click(function (evt) {
+				$('#results').html('');
+				$('#techdata').html('Запуск...');
 				var code = $('#code').val();
 				var task = {
 					script: code
