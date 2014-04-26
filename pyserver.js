@@ -1,3 +1,5 @@
+var debug = require('debug')('pyserver');
+
 var http = require('http');
 var express = require('express');
 var WebSocketServer = require('ws').Server;
@@ -16,6 +18,7 @@ var port = process.env.PORT || 3000;
 
 pydisp.start();
 server.listen(port);
+debug('listening on port ' + port);
 
 var tasks = {};
 
