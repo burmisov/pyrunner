@@ -1,1 +1,3 @@
 port: 7162
+python: "C:/Python27/python.exe"
+maxRunners: 2

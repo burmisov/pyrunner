@@ -1,7 +1,10 @@
 // Диспетчер выполнения скриптов на Питоне
+var debug = require('debug')('pydispatch');
+
 var pyrunner = require('./pyrunner');
 var _ = require('underscore');
 var async = require('async');
+var options = require('./options');
 
 var TIMEOUTS = {
 	maxIdleMs: 10*60*1000, // Сколько позволить существовать бездействующему запускателю
@@ -11,7 +14,7 @@ var TIMEOUTS = {
 
 var defaultOptions = {
 	baseDir: './tmp/', // Базовая папка для запускателей
-	maxRunners: 2 // Максимальное количество одновременных запускателей
+	maxRunners: options.maxRunners || 2 // Максимальное количество одновременных запускателей
 };
 
 // Класс PyDispather - диспетчер
@@ -90,6 +93,8 @@ PyDispatcher.prototype.waitGetFreeRunner = function (callback) {
 PyDispatcher.prototype.start = function () {
 	var self = this;
 	self.running = true;
+
+	debug('Starting dispatcher, max runners: ' + self.options.maxRunners);
 
 	// Проверка наличия и выполнение задания
 	function checkRunTask () {		

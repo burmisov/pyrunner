@@ -9,6 +9,7 @@ var uuid = require('uuid');
 var fsx = require('fs-extra');
 var path = require('path');
 var async = require('async');
+var options = require('./options');
 
 // Как называть скрипт (должно совпадать с настройкой в pyrunner.py)
 var scriptName = 'script.py';
@@ -46,7 +47,7 @@ PyRunner.prototype.prepare = function (callback) {
 		if (err) return callback(err);
 
 		// Создаение экземпляра PyProcessor в рабочей папке
-		self.pyproc = new pyprocess.PyProcessor(self.dirPath);
+		self.pyproc = new pyprocess.PyProcessor(self.dirPath, { pythonPath: options.python });
 
 		self.pyproc.on('error', function (err) {
 			debug('pyprocess error:');
