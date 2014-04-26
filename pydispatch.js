@@ -1,33 +1,38 @@
+// Диспетчер выполнения скриптов на Питоне
 var pyrunner = require('./pyrunner');
 var _ = require('underscore');
 var async = require('async');
 
 var TIMEOUTS = {
-	maxIdleMs: 10*60*1000,
-	freeRunnerCy: 50,
-	newTaskCy: 50
+	maxIdleMs: 10*60*1000, // Сколько позволить существовать бездействующему запускателю
+	freeRunnerCy: 50, // Интервал опроса на наличие свободного запускателя
+	newTaskCy: 50 // Интервал опроса на наличие нового задания
 };
 
 var defaultOptions = {
-	baseDir: './tmp/',
-	maxRunners: 2
+	baseDir: './tmp/', // Базовая папка для запускателей
+	maxRunners: 2 // Максимальное количество одновременных запускателей
 };
 
+// Класс PyDispather - диспетчер
 var PyDispatcher = module.exports.PyDispatcher = function (options) {
 	this.options = _.defaults(options || {}, defaultOptions);
 
-	this.runners = [];
-	this.tasks = [];
+	this.runners = []; // Запускатели
+	this.tasks = []; // Очередь заданий
 
 	this.running = false;
 };
 
+// Добавить еще один запускатель, если возможно
 PyDispatcher.prototype.checkAddRunners = function (callback) {
 	var self = this;
 
+	// Только если максимальное количество запускателей не достигнуто
 	if (self.runners.length >= self.options.maxRunners) {
 		return callback(false);
 	} else {
+		// Создание нового запускателя
 		var runner = new pyrunner.PyRunner(self.options.baseDir);
 		runner.prepare(function (err) {
 			self.runners.push(runner);
@@ -36,6 +41,7 @@ PyDispatcher.prototype.checkAddRunners = function (callback) {
 	}
 };
 
+// Проверка на наличие слишком долго бездействующих запускателей и их уничтожение
 PyDispatcher.prototype.checkIdleRunners = function (callback) {
 	var self = this;
 
@@ -59,6 +65,7 @@ PyDispatcher.prototype.checkIdleRunners = function (callback) {
 	);
 };
 
+// Ожидание свободного запускателя
 PyDispatcher.prototype.waitGetFreeRunner = function (callback) {
 	var self = this;
 
@@ -67,6 +74,7 @@ PyDispatcher.prototype.waitGetFreeRunner = function (callback) {
 		if (freeRunnerFound) {
 			return callback(freeRunnerFound);
 		} else {
+			// Если свободных нет, делаем попытку добавить новый
 			self.checkAddRunners(function () {
 				setTimeout(function () {
 					getFreeRunner(cb);
@@ -78,10 +86,12 @@ PyDispatcher.prototype.waitGetFreeRunner = function (callback) {
 	getFreeRunner(callback);
 };
 
+// Запуск диспетчера
 PyDispatcher.prototype.start = function () {
 	var self = this;
 	self.running = true;
 
+	// Проверка наличия и выполнение задания
 	function checkRunTask () {		
 		if (self.tasks.length > 0) {
 			var task = self.tasks.shift();
@@ -102,10 +112,12 @@ PyDispatcher.prototype.start = function () {
 	checkRunTask();
 };
 
+// Остановка диспетчера
 PyDispatcher.prototype.stop = function (callback) {
 	var self = this;
 	self.running = false;
 
+	// Ожиджаем, пока все запускатели освободятся от заданий
 	function checkStop () {
 		var busy = false;
 
@@ -121,6 +133,7 @@ PyDispatcher.prototype.stop = function (callback) {
 	}
 };
 
+// Приём задания в работу
 PyDispatcher.prototype.doTask = function (script, options, callback) {
 	var task = {
 		script: script,
