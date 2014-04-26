@@ -1,5 +1,7 @@
 // "Запускатель" питон-скриптов
 
+var debug = require('debug')('pyrunner');
+
 var pyprocess = require('./pyprocess');
 var util = require('util');
 var events = require('events');
@@ -47,7 +49,8 @@ PyRunner.prototype.prepare = function (callback) {
 		self.pyproc = new pyprocess.PyProcessor(self.dirPath);
 
 		self.pyproc.on('error', function (err) {
-			// todo
+			debug('pyprocess error:');
+			debug(err);
 		});
 
 		// Запуск PyProcessor
