@@ -1,3 +1,4 @@
+# This Python file uses the following encoding: utf-8
 import sys, os, time, json
 from cStringIO import StringIO
 
