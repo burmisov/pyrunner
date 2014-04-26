@@ -1,13 +1,18 @@
+// Ядро системы - процессор скриптов
+
 var spawn = require('child_process').spawn;
 var path = require('path');
 var util = require('util');
 var events = require('events');
 
-var pythonPath_default = 'C:/Python27/python.exe';
-var runnerPyScript_default = './pyrunner.py';
+var pythonPath_default = 'C:/Python27/python.exe'; // Где брать Питон по умолчанию
+var runnerPyScript_default = './pyrunner.py'; // Путь к основному процессору на Питоне по умолчанию
 
+// Класс PyProcessor
+// @param dirPath - в какой папке работать
+// @param options
 var PyProcessor = module.exports.PyProcessor = function (dirPath, options) {
-	events.EventEmitter.call(this);
+	events.EventEmitter.call(this); // Наследует от EventEmitter
 
 	if (!dirPath) throw new Error('No directory path specified.');
 	options = options || {};
@@ -26,12 +31,14 @@ var PyProcessor = module.exports.PyProcessor = function (dirPath, options) {
 
 util.inherits(PyProcessor, events.EventEmitter);
 
+// Запуск процессора
 PyProcessor.prototype.run = function () {
 	var self = this;
 
 	self.pythonShouldRun = true;
 
 	function runPyProcess () {
+		// Запуск интерпретатора Питона с основным обрабатывающим скриптом
 		self.pyChildProc = spawn(self.pythonPath, [self.runnerScriptAbsPath], {
 			cwd: self.cwdAbsPath,
 			stdio: 'pipe'
@@ -49,6 +56,7 @@ PyProcessor.prototype.run = function () {
 			if (self.serr.length > 10) self.serr.shift();
 		});
 
+		// Если выход был неожиданным, делаем перезапуск
 		self.pyChildProc.on('exit', function (code) {
 			if (self.pythonShouldRun) {
 				self.emit('crash' /*, crashdata */);
@@ -66,6 +74,8 @@ PyProcessor.prototype.run = function () {
 	runPyProcess();
 };
 
+// Остановка - процесс интерпретатора уничтожается
+// todo: async?
 PyProcessor.prototype.stop = function () {
 	var self = this;
 
