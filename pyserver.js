@@ -8,17 +8,18 @@ var uuid = require('uuid');
 var _ = require('underscore');
 var connect = require('connect');
 var cors = require('cors');
+var options = require('./options');
 
 var PyDispatcher = require('./pydispatch').PyDispatcher;
 var pydisp = new PyDispatcher();
 
 var app = express();
 var server = http.createServer(app);
-var port = process.env.PORT || 3000;
+var port = options.port || process.env.PORT || 3000;
 
 pydisp.start();
 server.listen(port);
-debug('listening on port ' + port);
+debug('listening on port ' + port);	
 
 var tasks = {};
 
