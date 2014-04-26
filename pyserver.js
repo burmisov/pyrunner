@@ -26,9 +26,10 @@ var tasks = {};
 app.use(cors({ origin: true }));
 app.use(connect.json());
 app.use(connect.urlencoded());
+app.use(express.static(path.join(__dirname, 'static')));
 
 app.get('/', function (req, res) {
-	res.sendfile(path.join(__dirname, 'ui.html'));
+	res.redirect('ui.html');
 });
 
 app.get('/status', function (req, res) {
